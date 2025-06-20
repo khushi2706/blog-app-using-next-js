@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { BlogPost, CreateBlogPost } from '@/types/blog';
 import { calculateReadingTime, generateExcerpt } from '@/utils/blogUtils';
-import { ObjectId } from 'mongodb';
 
 export async function GET() {
   try {
     const { db } = await connectToDatabase();
-    
+
     const posts = await db
       .collection('posts')
       .find({ published: true })
@@ -32,7 +31,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const data: CreateBlogPost = await request.json();
-    
+
     if (!data.title || !data.content || !data.author?.name) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -41,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { db } = await connectToDatabase();
-    
+
     const now = new Date();
     const readingTime = calculateReadingTime(data.content);
     const excerpt = generateExcerpt(data.content);
@@ -59,9 +58,9 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await db.collection('posts').insertOne(blogPost);
-    
+
     return NextResponse.json(
-      { 
+      {
         message: 'Post created successfully',
         postId: result.insertedId.toString()
       },

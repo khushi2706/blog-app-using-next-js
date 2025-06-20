@@ -4,12 +4,13 @@ import { ObjectId } from 'mongodb';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { db } = await connectToDatabase();
+    const resolvedParams = await params;
     
-    if (!ObjectId.isValid(params.id)) {
+    if (!ObjectId.isValid(resolvedParams.id)) {
       return NextResponse.json(
         { error: 'Invalid post ID' },
         { status: 400 }
@@ -18,7 +19,7 @@ export async function GET(
 
     const post = await db
       .collection('posts')
-      .findOne({ _id: new ObjectId(params.id), published: true });
+      .findOne({ _id: new ObjectId(resolvedParams.id), published: true });
 
     if (!post) {
       return NextResponse.json(
